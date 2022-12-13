@@ -61,7 +61,11 @@ class InsertLogIntoDatabase(Thread):
 
     def _insert_into_data_base(self, bulk_item):
         try:
-            APILogsModel.objects.using(self.DRF_API_LOGGER_DEFAULT_DATABASE).bulk_create(bulk_item)
+            with open('text', 'a') as f:
+                for element in bulk_item:
+                    f.write(element)
+                
+            # APILogsModel.objects.using(self.DRF_API_LOGGER_DEFAULT_DATABASE).bulk_create(bulk_item)
         except OperationalError:
             raise Exception("""
             DRF API LOGGER EXCEPTION
