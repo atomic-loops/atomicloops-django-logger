@@ -68,10 +68,12 @@ class InsertLogIntoDatabase(Thread):
                 
             # APILogsModel.objects.using(self.DRF_API_LOGGER_DEFAULT_DATABASE).bulk_create(bulk_item)
         except OperationalError:
+            print("Exception", flush=True)
+
             raise Exception("""
             DRF API LOGGER EXCEPTION
             Model does not exists.
             Did you forget to migrate?
             """)
         except Exception as e:
-            print('DRF API LOGGER EXCEPTION:', e)
+            print('DRF API LOGGER EXCEPTION:', e, flush=True)
