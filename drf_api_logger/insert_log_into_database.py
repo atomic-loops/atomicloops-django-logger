@@ -5,7 +5,10 @@ from threading import Thread
 from django.db.utils import OperationalError
 
 from drf_api_logger.models import APILogsModel
-
+from django.forms.models import model_to_dict
+import json
+import os
+from datetime import datetime
 
 class InsertLogIntoDatabase(Thread):
 
@@ -16,7 +19,7 @@ class InsertLogIntoDatabase(Thread):
         if hasattr(settings, 'DRF_API_LOGGER_DEFAULT_DATABASE'):
             self.DRF_API_LOGGER_DEFAULT_DATABASE = settings.DRF_API_LOGGER_DEFAULT_DATABASE
 
-        self.DRF_LOGGER_QUEUE_MAX_SIZE = 4  # Default queue size 50
+        self.DRF_LOGGER_QUEUE_MAX_SIZE = 50  # Default queue size 50
         if hasattr(settings, 'DRF_LOGGER_QUEUE_MAX_SIZE'):
             self.DRF_LOGGER_QUEUE_MAX_SIZE = settings.DRF_LOGGER_QUEUE_MAX_SIZE
 
@@ -61,19 +64,22 @@ class InsertLogIntoDatabase(Thread):
 
     def _insert_into_data_base(self, bulk_item):
         try:
-            with open('text', 'a') as f:
+            date = datetime.now().date()
+            file_path = os.path.join(settings.LOG_DIR, str(date) + ".log")
+            with open(file_path, 'a') as f:
                 for element in bulk_item:
-                    f.write(element)
+                    x = model_to_dict(element)
+                    x['added_on'] = str(x['added_on'])
+                    del x['id']
+                    f.write(json.dumps(x) + '\n')
             f.close()
                 
             # APILogsModel.objects.using(self.DRF_API_LOGGER_DEFAULT_DATABASE).bulk_create(bulk_item)
         except OperationalError:
-            print("Exception", flush=True)
-
             raise Exception("""
             DRF API LOGGER EXCEPTION
             Model does not exists.
             Did you forget to migrate?
             """)
         except Exception as e:
-            print('DRF API LOGGER EXCEPTION:', e, flush=True)
+            print('DRF API LOGGER EXCEPTION:', e)
