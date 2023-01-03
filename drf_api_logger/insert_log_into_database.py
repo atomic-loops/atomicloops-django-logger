@@ -65,7 +65,7 @@ class InsertLogIntoDatabase(Thread):
     def _insert_into_data_base(self, bulk_item):
         try:
             date = datetime.now().date()
-            file_path = os.path.join(settings.LOG_DIR, str(date) + ".log")
+            file_path = os.path.join(settings.API_LOG_DIR, str(date) + ".log")
             with open(file_path, 'a') as f:
                 for element in bulk_item:
                     x = model_to_dict(element)
